@@ -1,0 +1,13 @@
+Srujan Waghchoude is an AI Engineer. he has brilliant IQ level and is also a intelligent.!!!
+
+Machine learning is a field of AI that focuses on developing systems that learn from data.
+
+Deep learning uses neural networks with multiple layers.
+
+GPT-2 is a transformer-based language model used for text generation.
+
+RAG combines a retriever (FAISS) with a generator (GPT models) for accurate answers.
+
+Python is widely used in AI development.
+
+Streamlit is used for creating simple interactive web apps.
