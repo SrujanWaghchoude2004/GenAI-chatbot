@@ -4,21 +4,32 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import mysql.connector
 
 EMBED_MODEL = "all-MiniLM-L6-v2"
 INDEX_FILE = "faiss_index.idx"
 META_FILE = "meta.json"
 
-# Load embedder
+# MySQL connection
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",        
+    password="Manju@2083",    
+    database="chatbot_db"        
+)
+cursor = db.cursor()
+
+print("Loading embedding model...")
 embedder = SentenceTransformer(EMBED_MODEL)
 
-# Load FAISS index
+print("Loading FAISS index...")
 index = faiss.read_index(INDEX_FILE)
 meta = json.load(open(META_FILE, "r", encoding="utf-8"))
 
-# Load GPT-2 model
+print("Loading GPT-2 model...")
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 model = AutoModelForCausalLM.from_pretrained("gpt2")
+
 
 def retrieve(query, top_k=3):
     q_emb = embedder.encode([query], convert_to_numpy=True).astype("float32")
@@ -32,8 +43,13 @@ def generate_answer(query, context):
     outputs = model.generate(**inputs, max_new_tokens=120)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
+def save_query(question, answer=None):
+    sql = "INSERT INTO queries (question, answer) VALUES (%s, %s)"
+    cursor.execute(sql, (question, answer))
+    db.commit()
+
 print("RAG GPT-2 Chatbot Ready!")
-print("Type 'exit' to quit.\n")
+print("Type 'exit' or 'quit' to stop.\n")
 
 while True:
     q = input("You: ")
@@ -46,3 +62,13 @@ while True:
     ans = generate_answer(q, context)
     print("\nBot:", ans)
     print("\n" + "-"*40 + "\n")
+
+    save_query(q, ans)
+
+cursor.close()
+db.close()
+
+
+# OUTPUT in Mysql - 
+# SELECT * FROM queries;
+# SELECT question FROM queries;
